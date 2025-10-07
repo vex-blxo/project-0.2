@@ -1,0 +1,160 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  padding-top: 80px;
+}
+
+/* ================= NAVIGATION BAR ================= */
+/* !!!! Dont change anything please !!!!*/
+
+header nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 95.3%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #6bbf59;
+  color: #fff;
+  padding: 0.7rem 2rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+}
+
+nav ul {
+  list-style: none;
+  display: flex;
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+}
+
+nav ul li {
+  margin: 0;
+  padding: 0;
+}
+
+nav a {
+  color: white;
+  text-decoration: none;
+}
+
+/* ================= HERO SECTION ================= */
+/* Gusy Eto yung Goods na hinde eto matatanggal if nasa index pa pero kung homepage na wla na to so
+ hahahaha GL guys sana nmn po mabasa nyo .hero wag po tangalin*/
+
+.hero {
+  text-align: center;
+  padding: 3rem;
+  background: #f4f4f4;
+}
+
+/* ================= SCROLL GRID SECTION ================= */
+/* Etong Section na to ay nag expand po :) yung mga Grid*/
+/* pwede pong dina ayusin incase kung may ma sira lng thx */
+/* wag pong masyado mag gamit ng AI pag ayus neto kasi masisira pa */
+
+.scroll-grid {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  gap: 2rem;
+  padding-bottom: 1rem;
+}
+
+.product-grid {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  padding: 1rem;
+  gap: 2rem;
+  margin: 2rem 0;
+}
+
+.normal-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+  margin-top: 1rem;
+}
+
+/* ================= IMG SECTION ================= */
+/* Si andrew lng po pwede gumalaw thx */
+/* eto po ay sa Images*/
+
+.product {
+  flex: 0 0 auto;
+  width: 200px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 1rem;
+  text-align: center;
+  background: #fff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.product img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* ================= BUTTON SECTION ================= */
+/* para sa button si Andrew lng pwede gumalaw neto thx  */
+
+.shop {
+  background: #88a550;
+  color: white;
+  font-size: 15px;
+  border: none;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  margin-top: 0.5rem;
+  border-radius: 4px;
+}
+
+.shop:hover {
+  background: #6c833f;
+}
+
+/* ================= END SECTION ================= */
+/* pwede pong dina ayusin incase kung may ma sira lng thx */
+
+.title-btn {
+  display: inline-block;
+  font-size: 2rem;
+  font-weight: bold;
+  color: var(--white, #fff);
+  padding: 0.8rem 1.5rem;
+  border-radius: 8px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.title-btn:hover {
+  background: none;
+  border: none;
+  color: inherit;
+}
+
+.loginbutton,
+.signupbutton {
+  padding-right: 20px;
+  background: none;
+  border: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  padding: 0;
+}
+
+.loginbutton:hover,
+.signupbutton:hover {
+  background: none;
+  border: none;
+  color: inherit;
+}
