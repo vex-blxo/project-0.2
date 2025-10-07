@@ -1,0 +1,126 @@
+body {
+   margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: url("../images/food-image.webp") no-repeat center center/cover;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  /* optional: fallback color */
+  background-color: #000;
+  position: relative;
+}
+
+.container {
+  width: 90%;
+  max-width: 900px;
+  background-color: #1e1e1e;
+  display: flex;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 0 30px rgba(255, 165, 0, 0.2);
+}
+
+.login-box {
+  display: flex;
+  width: 100%;
+}
+
+.image-section {
+  width: 50%;
+  background-color: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.image-section img {
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+}
+
+.form-section {
+  width: 50%;
+  background-color: #121212;
+  color: #fff;
+  padding: 40px 30px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.form-section h2 {
+  margin-bottom: 25px;
+  font-size: 24px;
+  color: #fff;
+}
+
+form input {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 15px;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 20px;
+}
+
+.actions a {
+  color: #f39c12;
+  font-size: 14px;
+  text-decoration: none;
+}
+
+form button {
+  width: 100%;
+  padding: 12px;
+  background-color: #f39c12;
+  color: white;
+  font-size: 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+form button:hover {
+  background-color: #e67e22;
+}
+
+.register-text {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 14px;
+}
+
+.register-text a {
+  color: #f39c12;
+  text-decoration: none;
+}
+
+.register-text a:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+  .login-box {
+    flex-direction: column;
+  }
+
+  .image-section,
+  .form-section {
+    width: 100%;
+  }
+
+  .form-section {
+    padding: 30px 20px;
+  }
+}
