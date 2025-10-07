@@ -1,0 +1,28 @@
+-- Create database
+CREATE DATABASE IF NOT EXISTS foodweb_db;
+USE foodweb_db;
+
+-- Create accounts table
+CREATE TABLE accounts (
+    account_id INT AUTO_INCREMENT PRIMARY KEY,
+    first_name VARCHAR(50) NOT NULL,
+    last_name VARCHAR(50) NOT NULL,
+    email VARCHAR(100) NOT NULL UNIQUE,
+    account_password VARCHAR(255) NOT NULL,
+    user_type ENUM('buyer', 'seller', 'admin') DEFAULT 'buyer',
+    mobile_number VARCHAR(15),
+    profile_image VARCHAR(255) DEFAULT NULL,
+    
+    -- Address fields
+    home_number VARCHAR(20),
+    street VARCHAR(100),
+    barangay VARCHAR(100),
+    municipality VARCHAR(100),
+    city VARCHAR(100),
+    province VARCHAR(100),
+    zip_code VARCHAR(10),
+
+    -- Timestamps
+    date_registered DATETIME DEFAULT CURRENT_TIMESTAMP,
+    account_updated DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
