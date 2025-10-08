@@ -1,5 +1,5 @@
 body {
-   margin: 0;
+  margin: 0;
   padding: 0;
   font-family: 'Segoe UI', sans-serif;
   background: url("../images/signup_pic.jpg") no-repeat center center/cover;
@@ -7,8 +7,7 @@ body {
   justify-content: center;
   align-items: center;
   height: 100vh;
-  /* optional: fallback color */
-  background-color: #000;
+  background-color: #000; /* fallback */
   position: relative;
 }
 
@@ -54,10 +53,22 @@ body {
 
 .form-section h2 {
   margin-bottom: 25px;
-  font-size: 24px;
+  font-size: 26px;
   color: #fff;
+  text-align: center;
 }
 
+/* Grouped input layout */
+.name-fields {
+  display: flex;
+  gap: 10px;
+}
+
+.name-fields input {
+  flex: 1;
+}
+
+/* General input styling */
 form input {
   width: 100%;
   padding: 12px;
@@ -65,20 +76,18 @@ form input {
   border: none;
   border-radius: 6px;
   font-size: 16px;
+  background-color: #2a2a2a;
+  color: #fff;
+  transition: background 0.3s, box-shadow 0.3s;
 }
 
-.actions {
-  display: flex;
-  justify-content: flex-end;
-  margin-bottom: 20px;
+form input:focus {
+  outline: none;
+  background-color: #333;
+  box-shadow: 0 0 0 2px #f39c12;
 }
 
-.actions a {
-  color: #f39c12;
-  font-size: 14px;
-  text-decoration: none;
-}
-
+/* Button */
 form button {
   width: 100%;
   padding: 12px;
@@ -88,13 +97,18 @@ form button {
   border: none;
   border-radius: 6px;
   cursor: pointer;
-  transition: background 0.3s ease;
+  transition: background 0.3s ease, transform 0.1s ease;
 }
 
 form button:hover {
   background-color: #e67e22;
 }
 
+form button:active {
+  transform: scale(0.98);
+}
+
+/* Footer text */
 .register-text {
   text-align: center;
   margin-top: 20px;
@@ -104,12 +118,14 @@ form button:hover {
 .register-text a {
   color: #f39c12;
   text-decoration: none;
+  transition: text-decoration 0.2s;
 }
 
 .register-text a:hover {
   text-decoration: underline;
 }
 
+/* Mobile responsiveness */
 @media (max-width: 768px) {
   .login-box {
     flex-direction: column;
@@ -122,5 +138,9 @@ form button:hover {
 
   .form-section {
     padding: 30px 20px;
+  }
+
+  .name-fields {
+    flex-direction: column;
   }
 }
