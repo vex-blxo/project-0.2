@@ -13,16 +13,19 @@
 <div class="product-grid scroll-grid">
   <div class="product">
     <img
-      src="{{ url_for('static', filename='images/product5.jpg') }}"
-      alt="Product 5"
+      src="{{ url_for('static', filename='images/product1.jpg') }}"
+      alt="All Purpose Flour"
     />
-    <h3>Product 5</h3>
-    <p>$24.99</p>
+
+    <div class="product-info">
+      <h3>All Purpose Flour</h3>
+      <p>$19.99</p>
+    </div>
 
     <form method="POST" action="{{ url_for('add_to_cart') }}">
-      <input type="hidden" name="product_id" value="5" />
-      <input type="number" name="quantity" value="1" min="1" max="15" />
-      <button type="submit">Add to Cart</button>
+      <input type="hidden" name="product_id" value="1" />
+      <input type="number" name="quantity" value="1" min="1" max="10" />
+      <button class="shop" type="submit">Add to Cart</button>
     </form>
   </div>
 
