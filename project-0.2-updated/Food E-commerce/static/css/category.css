@@ -1,0 +1,27 @@
+.categories {
+  padding: 2rem;
+  background: #f9f9f9;
+}
+
+.category-grid {
+  display: flex;
+  overflow-x: auto;
+  gap: 1rem;
+  scroll-behavior: smooth;
+}
+
+.category {
+  flex: 0 0 auto;
+  background: #88a550;
+  color: #fff;
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  font-weight: bold;
+  text-align: center;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.category:hover {
+  background: #6c833f;
+}
