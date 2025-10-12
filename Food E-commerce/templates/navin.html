@@ -22,7 +22,6 @@
       href="{{ url_for('static', filename='favicon.ico') }}"
       type="image/x-icon"
     />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Roboto&display=swap"
@@ -39,13 +38,54 @@
               <span class="cart-badge">{{ cart_quantity }}</span>
             </a>
           </li>
-          <!-- Renz dito yung nakalagay na Hello (User or something) -->
+
+          {% if session.first_name %}
+          <li class="user-menu">
+            <span class="user-greeting"
+              >Hello, <strong>{{ session.first_name }}</strong>!</span
+            >
+
+            <!-- ⚙️ Gear icon -->
+            <i class="fas fa-gear settings-icon" id="settingsIcon"></i>
+
+            <!-- Dropdown -->
+            <div class="dropdown-menu" id="dropdownMenu">
+              <a href="#">Profile</a>
+              <a href="#">Settings</a>
+              <a href="{{ url_for('logout') }}">Logout</a>
+            </div>
+          </li>
+          {% endif %}
         </ul>
       </nav>
     </header>
+
     <main>{% block content %}{% endblock %}</main>
+
     <footer>
       <p>&copy; 2025 MyShop. All rights reserved.</p>
     </footer>
+
+    <script>
+      // JS for dropdown + rotation
+      const settingsIcon = document.getElementById("settingsIcon");
+      const dropdownMenu = document.getElementById("dropdownMenu");
+
+      settingsIcon.addEventListener("click", () => {
+        settingsIcon.classList.toggle("rotate");
+        dropdownMenu.classList.toggle("show");
+      });
+
+      // Click outside to close
+      document.addEventListener("click", (event) => {
+        if (
+          !settingsIcon.contains(event.target) &&
+          !dropdownMenu.contains(event.target)
+        ) {
+          settingsIcon.classList.remove("rotate");
+          dropdownMenu.classList.remove("show");
+        }
+      });
+    </script>
   </body>
 </html>
