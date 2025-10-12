@@ -20,7 +20,17 @@
         </div>
         <div class="form-section">
           <h2>Sign Up</h2>
-          <form method="POST" action="/signup">
+
+          {% with messages = get_flashed_messages(with_categories=true) %} {% if
+          messages %} {% for category, message in messages %}
+          <div class="flash-message {{ category }}">{{ message }}</div>
+          {% endfor %} {% endif %} {% endwith %}
+
+          <form
+            method="POST"
+            action="{{ url_for('signup') }}"
+            autocomplete="off"
+          >
             <input
               type="text"
               name="first_name"
@@ -33,12 +43,7 @@
               placeholder="Last Name"
               required
             />
-            <input
-              type="email"
-              name="email"
-              placeholder="Email"
-              required
-            />
+            <input type="email" name="email" placeholder="Email" required />
             <input
               type="password"
               name="password"
@@ -53,8 +58,10 @@
             />
             <button type="submit">Sign Up</button>
           </form>
+
           <p class="register-text">
-            Already have an account? <a href="/login">Login here</a>
+            Already have an account?
+            <a href="{{ url_for('login') }}">Login here</a>
           </p>
         </div>
       </div>
