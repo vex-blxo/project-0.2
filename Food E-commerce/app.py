@@ -20,23 +20,24 @@ db = mysql.connector.connect(
 # AUTH DECORATORS
 # ===============================
 def login_required(f):
-    """Restrict access to logged-in users only."""
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if 'user_id' not in session:
-            flash("Please log in first to access this page.", "warning")
-            return redirect(url_for('login', next=request.path))
+        if not session.get('user_id'):
+            flash("Please log in to continue.", "warning")
+            return redirect(url_for('login', next=request.endpoint))
         return f(*args, **kwargs)
     return decorated_function
 
 
 def guest_only(f):
-    """Restrict access to *non-logged-in* users only."""
     @wraps(f)
     def decorated_function(*args, **kwargs):
+        # Ignore redirect loops if logging in right now
+        if request.endpoint == 'login' and request.method == 'POST':
+            return f(*args, **kwargs)
         if 'user_id' in session:
-            flash("You’re already logged in!", "info")
-            return redirect(request.referrer or url_for('homepage'))
+            flash("You're already logged in!", "info")
+            return redirect(url_for('homepage'))
         return f(*args, **kwargs)
     return decorated_function
 
@@ -46,10 +47,10 @@ def guest_only(f):
 # ===============================
 @app.route('/')
 def index():
-    """Render public index page."""
+    """Main entry point — redirect based on login state."""
+    if 'user_id' in session:
+        return redirect(url_for('homepage'))
     return render_template("index.html")
-
-
 
 @app.route('/homepage')
 @login_required
@@ -60,9 +61,11 @@ def homepage():
 
 @app.route('/reload')
 def reload():
-    """Reload homepage."""
-    return redirect(url_for("homepage"))
-
+    """Reloads the appropriate page depending on login state."""
+    if 'user_id' in session:
+        return redirect(url_for('homepage'))
+    else:
+        return redirect(url_for('index'))
 
 # ===============================
 # LOGIN
@@ -71,36 +74,37 @@ def reload():
 @guest_only
 def login():
     if request.method == 'POST':
-        email = request.form['email']
-        password = request.form['password']
+        email = request.form['email'].strip()
+        password = request.form['password'].strip()
 
         try:
-            cursor = db.cursor(dictionary=True)
+            cursor = db.cursor(dictionary=True, buffered=True)
             cursor.execute("SELECT * FROM accounts WHERE email = %s", (email,))
             user = cursor.fetchone()
 
             if user and check_password_hash(user['account_password'], password):
                 session['user_id'] = user['account_id']
                 session['first_name'] = user['first_name']
+                session['last_name'] = user['last_name']
                 session['email'] = user['email']
+                session['user_type'] = user['user_type']
 
                 flash(f"Welcome back, {user['first_name']}!", "success")
-
                 next_page = request.args.get('next')
-                return redirect(next_page or url_for('homepage'))  # 👈 Redirects to homepage
-            else:
-                flash("Invalid email or password. Please try again.", "error")
-                return redirect(url_for('login'))
+                return redirect(next_page or url_for('homepage'))
+
+            flash("Invalid email or password. Please try again.", "error")
+            return redirect(url_for('login'))
 
         except mysql.connector.Error as err:
             print("Database error:", err)
-            flash("An error occurred while logging in. Please try again.", "error")
+            flash("An internal error occurred. Please try again later.", "error")
+            return redirect(url_for('login'))
 
         finally:
             cursor.close()
 
     return render_template('login.html')
-
 
 # ===============================
 # SIGNUP

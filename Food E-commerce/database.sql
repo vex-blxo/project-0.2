@@ -1,8 +1,13 @@
--- Create database
-CREATE DATABASE IF NOT EXISTS foodweb_db;
+-- ===================================
+-- RESET DATABASE
+-- ===================================
+DROP DATABASE IF EXISTS foodweb_db;
+CREATE DATABASE foodweb_db;
 USE foodweb_db;
 
--- Create accounts table
+-- ===================================
+-- ACCOUNTS TABLE
+-- ===================================
 CREATE TABLE accounts (
     account_id INT AUTO_INCREMENT PRIMARY KEY,
     first_name VARCHAR(50) NOT NULL,
@@ -27,13 +32,20 @@ CREATE TABLE accounts (
     account_updated DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
+-- ===================================
+-- PRODUCTS TABLE
+-- ===================================
 CREATE TABLE products (
     product_id INT AUTO_INCREMENT PRIMARY KEY,
     product_name VARCHAR(100) NOT NULL,
     maker VARCHAR(100),
     description TEXT,
     price DECIMAL(10,2) NOT NULL,
-    size INT,
+    image VARCHAR(255) DEFAULT NULL,
+    gallery JSON DEFAULT NULL,
+    size_type ENUM('weight', 'volume', 'count') DEFAULT 'weight',  -- e.g. 500g, 1L, 6pcs
+    sizes JSON DEFAULT NULL,                                       -- ["250g", "500g", "1kg"]
+    stock_quantity INT DEFAULT 0,
     category ENUM(
         'Baking Supplies & Ingredients',
         'Coffee, Tea & Beverages',
@@ -46,19 +58,39 @@ CREATE TABLE products (
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
-USE foodweb_db;
-
+-- ===================================
+-- ORDERS TABLE
+-- ===================================
 CREATE TABLE orders (
     order_id INT AUTO_INCREMENT PRIMARY KEY,
     account_id INT NOT NULL,
-    product_id INT NOT NULL,
-    quantity INT NOT NULL DEFAULT 1,
-    total_price DECIMAL(10,2) NOT NULL,
     order_status ENUM('pending', 'processing', 'shipped', 'delivered', 'cancelled') DEFAULT 'pending',
     payment_method ENUM('cod', 'gcash', 'card') DEFAULT 'cod',
+    total_price DECIMAL(10,2) DEFAULT 0.00,
     order_date DATETIME DEFAULT CURRENT_TIMESTAMP,
     last_updated DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
-    CONSTRAINT fk_order_account FOREIGN KEY (account_id) REFERENCES accounts(account_id) ON DELETE CASCADE,
-    CONSTRAINT fk_order_product FOREIGN KEY (product_id) REFERENCES products(product_id) ON DELETE CASCADE
+    CONSTRAINT fk_orders_account FOREIGN KEY (account_id)
+        REFERENCES accounts(account_id)
+        ON DELETE CASCADE
+);
+
+-- ===================================
+-- ORDER ITEMS TABLE
+-- ===================================
+CREATE TABLE order_items (
+    item_id INT AUTO_INCREMENT PRIMARY KEY,
+    order_id INT NOT NULL,
+    product_id INT NOT NULL,
+    quantity INT NOT NULL DEFAULT 1,
+    price_each DECIMAL(10,2) NOT NULL,
+    subtotal DECIMAL(10,2) GENERATED ALWAYS AS (quantity * price_each) STORED,
+
+    CONSTRAINT fk_items_order FOREIGN KEY (order_id)
+        REFERENCES orders(order_id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_items_product FOREIGN KEY (product_id)
+        REFERENCES products(product_id)
+        ON DELETE CASCADE
 );
