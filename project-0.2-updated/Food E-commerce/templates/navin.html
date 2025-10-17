@@ -8,7 +8,7 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
-    <title>{% block title %}Food and Gourmet{% endblock %}</title>
+    <title>{% block title %}Food Taxi{% endblock %}</title>
     <link
       rel="stylesheet"
       href="{{ url_for('static', filename='css/style.css') }}"
@@ -30,7 +30,7 @@
   <body>
     <header>
       <nav>
-        <a href="{{ url_for('reload') }}" class="title-btn">Food and Gourmet</a>
+        <a href="{{ url_for('reload') }}" class="title-btn">Food Taxi</a>
         <ul>
           <li class="cart-link">
             <a href="{{ url_for('cart') }}" class="cartbutton">
@@ -67,23 +67,22 @@
     </footer>
 
     <script>
-      // JS for dropdown + rotation
       const settingsIcon = document.getElementById("settingsIcon");
       const dropdownMenu = document.getElementById("dropdownMenu");
 
       settingsIcon.addEventListener("click", () => {
-        settingsIcon.classList.toggle("rotate");
-        dropdownMenu.classList.toggle("show");
+        settingsIcon.classList.toggle("active"); // rotate gear
+        dropdownMenu.classList.toggle("active"); // show/hide dropdown
       });
 
-      // Click outside to close
-      document.addEventListener("click", (event) => {
+      // Close dropdown if clicking outside
+      document.addEventListener("click", (e) => {
         if (
-          !settingsIcon.contains(event.target) &&
-          !dropdownMenu.contains(event.target)
+          !settingsIcon.contains(e.target) &&
+          !dropdownMenu.contains(e.target)
         ) {
-          settingsIcon.classList.remove("rotate");
-          dropdownMenu.classList.remove("show");
+          settingsIcon.classList.remove("active");
+          dropdownMenu.classList.remove("active");
         }
       });
     </script>
