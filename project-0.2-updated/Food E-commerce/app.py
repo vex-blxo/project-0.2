@@ -32,11 +32,21 @@ def login_required(f):
 def guest_only(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        # Ignore redirect loops if logging in right now
         if request.endpoint == 'login' and request.method == 'POST':
             return f(*args, **kwargs)
         if 'user_id' in session:
             flash("You're already logged in!", "info")
+            return redirect(url_for('homepage'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+
+# ✅ NEW — admin-only decorator
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'user_type' not in session or session['user_type'] != 'admin':
+            flash("Access denied: Admins only.", "danger")
             return redirect(url_for('homepage'))
         return f(*args, **kwargs)
     return decorated_function
@@ -67,6 +77,7 @@ def reload():
     else:
         return redirect(url_for('index'))
 
+
 # ===============================
 # LOGIN
 # ===============================
@@ -90,8 +101,12 @@ def login():
                 session['user_type'] = user['user_type']
 
                 flash(f"Welcome back, {user['first_name']}!", "success")
-                next_page = request.args.get('next')
-                return redirect(next_page or url_for('homepage'))
+
+                # ✅ Redirect based on role
+                if user['user_type'] == 'admin':
+                    return redirect(url_for('admin'))
+                else:
+                    return redirect(url_for('homepage'))
 
             flash("Invalid email or password. Please try again.", "error")
             return redirect(url_for('login'))
@@ -105,6 +120,7 @@ def login():
             cursor.close()
 
     return render_template('login.html')
+
 
 # ===============================
 # SIGNUP
@@ -155,16 +171,33 @@ def signup():
 
 
 # ===============================
+# ✅ ADMIN DASHBOARD
+# ===============================
+@app.route('/admin')
+@login_required
+@admin_required
+def admin():
+    """Admin-only dashboard page."""
+    try:
+        cursor = db.cursor(dictionary=True)
+        cursor.execute("SELECT account_id, first_name, last_name, email, user_type, date_registered FROM accounts")
+        users = cursor.fetchall()
+    except mysql.connector.Error as err:
+        print("Database error:", err)
+        users = []
+    finally:
+        cursor.close()
+
+    return render_template('admin.html', users=users)
+
+
+# ===============================
 # CART SYSTEM
 # ===============================
 products = {
     1: {"name": "All Purpose Flour", "price": 19.99, "stock": 10, "image": "product1.jpg"},
     2: {"name": "Product 2", "price": 29.99, "stock": 8, "image": "product2.jpg"},
     3: {"name": "Product 3", "price": 39.99, "stock": 5, "image": "product3.jpg"},
-    5: {"name": "Product 5", "price": 24.99, "stock": 15, "image": "product5.jpg"},
-    6: {"name": "Product 6", "price": 34.99, "stock": 20, "image": "product6.jpg"},
-    7: {"name": "Product 7", "price": 44.99, "stock": 12, "image": "product7.jpg"},
-    8: {"name": "Product 8", "price": 54.99, "stock": 7, "image": "product8.jpg"},
 }
 
 
@@ -205,6 +238,13 @@ def cart():
     return render_template("cart.html", cart=cart, total=total)
 
 
+# Example route
+@app.route("/product/<int:product_id>")
+def product_detail(product_id):
+    product = products[product_id]
+    return render_template("product_detail.html", product=product)
+
+
 @app.context_processor
 def cart_count():
     cart_quantity = 0
@@ -232,10 +272,14 @@ def logout():
     flash("You’ve been logged out successfully.", "info")
     return redirect(url_for('login'))
 
+
+# ===============================
+# BUYER DASHBOARD
+# ===============================
 @app.route('/buyer')
+@login_required
 def buyer_dashboard():
     return render_template('buyerdashboard.html')
-
 
 
 # ===============================
