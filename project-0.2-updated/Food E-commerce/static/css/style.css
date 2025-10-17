@@ -43,7 +43,6 @@ nav {
   align-items: center;
 }
 
-/* Brand / Logo */
 .title-btn {
   font-size: 1.6rem;
   font-weight: 700;
@@ -56,7 +55,6 @@ nav {
   color: #158b42;
 }
 
-/* Nav Links */
 nav ul {
   list-style: none;
   display: flex;
@@ -74,7 +72,6 @@ nav ul li a:hover {
   color: #1fa14e;
 }
 
-/* Auth Buttons */
 .signupbutton,
 .loginbutton {
   padding: 0.5rem 1.2rem;
@@ -103,28 +100,27 @@ nav ul li a:hover {
   background: #e6f8ea;
 }
 
-/* Cart Icon */
-.cartbutton {
-  position: relative;
-  font-size: 1.4rem;
-  color: #1fa14e;
-  transition: 0.3s;
-}
-
-.cartbutton:hover {
-  color: #158b42;
-}
-
-.cart-badge {
-  position: absolute;
-  top: -8px;
-  right: -10px;
-  background-color: #ff4d4d;
-  color: #fff;
-  font-size: 0.75rem;
-  border-radius: 50%;
-  padding: 3px 6px;
+.add-to-cart {
+  display: inline-block;
+  background-color: #1fa14e; /* same as your cart button */
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
   font-weight: bold;
+  margin-top: auto;
+  transition: background-color 0.25s ease, transform 0.15s ease;
+}
+
+.add-to-cart:hover {
+  background-color: #178c42;
+  transform: translateY(-2px);
+}
+
+.add-to-cart:active {
+  transform: translateY(0);
 }
 
 /* ========== HERO SECTION ========== */
@@ -197,82 +193,98 @@ nav ul li a:hover {
   transform: scale(1.05);
 }
 
-/* ========== PRODUCT GRID ========== */
-.product-grid {
-  display: grid;
-  gap: 1.8rem;
-  justify-content: center;
-  padding: 2rem;
-}
+/* ========== PRODUCT SCROLL / GRID ========== */
 
-.scroll-grid {
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+/* Horizontal scroll for New Arrivals */
+.product-scroll {
+  display: flex;
   overflow-x: auto;
-  padding-bottom: 2rem;
+  gap: 1.5rem;
+  padding: 1rem;
+  scroll-behavior: smooth;
 }
 
+.product-scroll::-webkit-scrollbar {
+  height: 8px;
+}
+
+.product-scroll::-webkit-scrollbar-thumb {
+  background-color: #1fa14e;
+  border-radius: 10px;
+}
+
+.product-scroll::-webkit-scrollbar-track {
+  background: #e6f8ea;
+}
+
+.product-scroll .product {
+  flex: 0 0 auto; /* keeps each product in one row */
+}
+
+/* Normal grid for other sections */
 .normal-grid {
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+  margin-top: 1rem;
 }
 
 /* ========== PRODUCT CARD ========== */
 .product {
+  flex: 0 0 auto; /* Prevents expansion/shrinking */
+  width: 210px;
+  height: 360px;
   background: #fff;
-  border-radius: 25px;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
-  overflow: hidden;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 0.5rem;
   text-align: center;
-  padding: 1.5rem;
-  transition: 0.3s ease;
-  position: relative;
+  font-family: Arial, sans-serif;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .product:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.12);
+  transform: translateY(-5px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .product img {
-  width: 100%;
-  height: 180px;
-  object-fit: cover;
-  border-radius: 20px;
+  width: 150px;
+  height: 150px;
+  object-fit: auto; /* Keeps image from stretching */
+  border-radius: 8px;
+}
+
+/* ===== Text Styles ===== */
+.product-name {
+  font-size: 18px;
+  font-weight: bold;
+  color: #333;
+  margin: 10px 0 5px;
+}
+
+.product-category {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 6px;
+}
+
+.product-rating {
+  color: #f5b50a;
+  font-size: 16px;
+  margin-bottom: 6px;
+}
+
+.product-price {
+  font-size: 17px;
+  color: #222;
+  font-weight: bold;
+  margin-bottom: 8px;
 }
 
 .product h3 {
-  margin-top: 1rem;
-  font-size: 1.2rem;
-  color: #1b6e3a;
-}
-
-.product p {
-  font-weight: bold;
-  color: #333;
-  margin: 0.5rem 0;
-}
-
-.product input[type="number"] {
-  width: 60px;
-  padding: 5px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  text-align: center;
-}
-
-.product button {
-  background: #1fa14e;
-  color: #fff;
-  border: none;
-  padding: 0.6rem 1.5rem;
-  border-radius: 50px;
-  font-weight: 600;
-  cursor: pointer;
-  margin-top: 0.8rem;
-  transition: 0.3s ease;
-}
-
-.product button:hover {
-  background: #158b42;
+  font-size: 1rem;
+  margin: 0.5rem 0 0.2rem;
 }
 
 /* ========== WHY CHOOSE US SECTION ========== */
@@ -343,4 +355,97 @@ footer {
     font-size: 1.8rem;
   }
 }
-  
+
+/* ========== Buy Button ========== */
+.buy-now {
+  display: inline-block;
+  background-color: #1fa14e;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  margin-right: 555px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+  margin-top: auto;
+  transition: background-color 0.25s ease, transform 0.15s ease;
+}
+
+.buy-now:hover {
+  background-color: #178c42;
+  transform: translateY(-2px);
+}
+
+.buy-now:active {
+  transform: translateY(0);
+}
+
+/* =========== Product_details =========== */
+/* testing part no body moves this please */
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  z-index: 9999;
+}
+
+.modal-overlay.active {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.modal {
+  background-color: #fff;
+  border-radius: 10px 10px 0 0;
+  padding: 1.5rem;
+  width: 100%;
+  width: 90%;
+  max-width: 800px;
+  height: 80%;
+  max-height: 100%;
+  transform: translateY(100%);
+  transition: transform 0.3s ease;
+}
+
+.modal-overlay.active .modal {
+  transform: translateY(0); /* slide up */
+}
+
+.close-btn {
+  cursor: pointer;
+  font-size: 2rem; /* bigger V */
+  text-align: center;
+  display: block;
+  width: 100%; /* full width of modal */
+  margin-bottom: 1rem; /* space below */
+  padding: 0.5rem 0; /* expands clickable area vertically */
+  background-color: none; /* optional: subtle background */
+  border-radius: 8px; /* rounded edges */
+  transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+#modalImage {
+  width: 100%; /* fills modal width */
+  max-height: 200px; /* prevents it from being too tall */
+  object-fit: contain; /* keeps aspect ratio */
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+.modal-rating {
+  color: #f5b50a;
+  font-size: 1.2rem;
+  margin: 0.5rem 0;
+  text-align: left;
+}
