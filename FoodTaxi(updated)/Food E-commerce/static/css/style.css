@@ -1,4 +1,4 @@
-/* ========== GLOBAL STYLES ========== */
+F/* ========== GLOBAL STYLES ========== */
 * {
   margin: 0;
   padding: 0;
@@ -412,7 +412,7 @@ footer {
   width: 100%;
   width: 90%;
   max-width: 800px;
-  height: 80%;
+  height: 90%;
   max-height: 100%;
   transform: translateY(100%);
   transition: transform 0.3s ease;
@@ -620,3 +620,4 @@ footer {
   margin-bottom: 1rem;
   color: #333;
 }
+
