@@ -1,10 +1,26 @@
 from functools import wraps
-from flask import Flask, render_template, request, redirect, url_for, flash, session
+from flask import Flask, render_template, request, redirect, url_for, flash, session, send_from_directory
 from werkzeug.security import generate_password_hash, check_password_hash
 import mysql.connector
+import os
+from werkzeug.utils import secure_filename
+from cryptography.fernet import Fernet
+import base64
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key_here'
+
+# Configure upload folder
+UPLOAD_FOLDER = 'static/images/profile'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+
+# Encryption key for profile images
+ENCRYPTION_KEY = Fernet.generate_key()
+cipher = Fernet(ENCRYPTION_KEY)
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 # ===============================
 # DATABASE CONNECTION
@@ -288,6 +304,8 @@ def profile():
     cursor.execute("SELECT * FROM accounts WHERE account_id = %s", (session['user_id'],))
     user = cursor.fetchone()
     cursor.close()
+    # Update session with profile_image
+    session['profile_image'] = user['profile_image'] if user and user['profile_image'] else None
     return render_template('profile.html', user=user)
 
 from flask import jsonify
@@ -344,7 +362,68 @@ def settings():
     user = cursor.fetchone()
     cursor.close()
 
-    return render_template('settings.html', user=user)  
+    return render_template('settings.html', user=user)
+
+@app.route('/update_profile_picture', methods=['POST'])
+@login_required
+def update_profile_picture():
+    if 'profile_picture' not in request.files:
+        flash('No file part', 'error')
+        return redirect(url_for('profile'))
+
+    file = request.files['profile_picture']
+    if file.filename == '':
+        flash('No selected file', 'error')
+        return redirect(url_for('profile'))
+
+    if file and allowed_file(file.filename):
+        # Delete old profile picture if exists
+        cursor = db.cursor(dictionary=True)
+        cursor.execute("SELECT profile_image FROM accounts WHERE account_id = %s", (session['user_id'],))
+        user = cursor.fetchone()
+        if user and user['profile_image']:
+            old_filepath = os.path.join('static', user['profile_image'])
+            if os.path.exists(old_filepath):
+                os.remove(old_filepath)
+
+        filename = secure_filename(f"{session['user_id']}_{file.filename}")
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+
+        # Encrypt the file data
+        file_data = file.read()
+        encrypted_data = cipher.encrypt(file_data)
+
+        # Save encrypted data to file
+        with open(filepath, 'wb') as f:
+            f.write(encrypted_data)
+
+        # Update database with new profile picture path
+        update_query = "UPDATE accounts SET profile_image = %s WHERE account_id = %s"
+        cursor.execute(update_query, (f"images/profile/{filename}", session['user_id']))
+        db.commit()
+        cursor.close()
+
+        flash('Profile picture updated successfully!', 'success')
+    else:
+        flash('Invalid file type. Only PNG, JPG, JPEG, GIF allowed.', 'error')
+
+    return redirect(url_for('profile'))
+
+@app.route('/static/images/profile/<filename>')
+@login_required
+def get_encrypted_image(filename):
+    from flask import Response
+    filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+    if os.path.exists(filepath):
+        with open(filepath, 'rb') as f:
+            encrypted_data = f.read()
+        decrypted_data = cipher.decrypt(encrypted_data)
+        # Determine MIME type based on file extension
+        ext = filename.rsplit('.', 1)[1].lower()
+        mime_type = 'image/jpeg' if ext in ['jpg', 'jpeg'] else f'image/{ext}'
+        return Response(decrypted_data, mimetype=mime_type)
+    else:
+        return "File not found", 404
 
 # ===============================
 # RUN APP
