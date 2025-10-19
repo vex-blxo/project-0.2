@@ -1,29 +1,19 @@
 <!-- product_detail_in.html -->
 <div class="modal-overlay" id="productOverlay">
   <div class="modal" id="productModal">
-    <!-- Close button -->
-    <span class="close-btn">×</span>
-
-    <!-- Product image -->
+    <span class="close-btn">V</span>
     <img id="modalImage" src="" alt="Product Image" />
-
-    <!-- Product details -->
     <h3 id="modalName"></h3>
     <p id="modalCategory"></p>
     <p id="modalPrice"></p>
-
-    <!-- Rating -->
     <div class="modal-rating" id="modalRating">★★★★☆</div>
-
-    <!-- Product description -->
     <p id="modalDescription">This is a placeholder description for now.</p>
-
-    <!-- Add to Cart Form -->
-    <form id="addToCartForm" action="{{ url_for('add_to_cart') }}" method="POST">
-      <!-- Hidden product ID (filled by JS dynamically) -->
-      <input type="hidden" name="product_id" id="modalProductId" value="">
-
-      <!-- Quantity field -->
+    <form
+      id="addToCartForm"
+      action="{{ url_for('add_to_cart') }}"
+      method="POST"
+    >
+      <input type="hidden" name="product_id" id="modalProductId" value="" />
       <input
         type="number"
         name="quantity"
@@ -32,8 +22,6 @@
         min="1"
         class="quantity-input"
       />
-
-      <!-- Add to cart button -->
       <button type="submit" class="add-to-cart">Add to Cart</button>
     </form>
   </div>
