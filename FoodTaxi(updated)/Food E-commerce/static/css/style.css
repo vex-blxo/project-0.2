@@ -419,26 +419,26 @@ footer {
 }
 
 .modal-overlay.active .modal {
-  transform: translateY(0); /* slide up */
+  transform: translateY(0);
 }
 
 .close-btn {
   cursor: pointer;
-  font-size: 2rem; /* bigger V */
+  font-size: 2rem;
   text-align: center;
   display: block;
-  width: 100%; /* full width of modal */
-  margin-bottom: 1rem; /* space below */
-  padding: 0.5rem 0; /* expands clickable area vertically */
-  background-color: none; /* optional: subtle background */
-  border-radius: 8px; /* rounded edges */
+  width: 100%;
+  margin-bottom: 1rem;
+  padding: 0.5rem 0;
+  background-color: none;
+  border-radius: 8px;
   transition: transform 0.2s ease, background-color 0.2s ease;
 }
 
 #modalImage {
-  width: 100%; /* fills modal width */
-  max-height: 200px; /* prevents it from being too tall */
-  object-fit: contain; /* keeps aspect ratio */
+  width: 100%;
+  max-height: 200px;
+  object-fit: contain;
   border-radius: 8px;
   margin-bottom: 1rem;
 }
@@ -619,4 +619,15 @@ footer {
   border-radius: 6px;
   margin-bottom: 1rem;
   color: #333;
+}
+
+.recommended-products {
+  display: flex; /* horizontal row */
+  flex-wrap: wrap; /* wrap to next line if not enough space */
+  gap: 20px; /* space between products */
+}
+
+.recommended-products .product {
+  flex: 0 0 200px; /* width of each product card */
+  box-sizing: border-box;
 }
