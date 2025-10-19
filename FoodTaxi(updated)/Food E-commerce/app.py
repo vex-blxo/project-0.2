@@ -60,23 +60,54 @@ def admin_required(f):
 # ===============================
 @app.route('/')
 def index():
-    """Main entry point — redirect based on login state."""
+    """Main entry point — show products for guests."""
+    db = get_db_connection()
+    cursor = db.cursor(dictionary=True)
+
+    # Fetch all products for recommended
+    cursor.execute("SELECT * FROM products ORDER BY product_id DESC")
+    recommended = cursor.fetchall()
+
+    # Fetch only 10 newest products for New Arrivals
+    cursor.execute("SELECT * FROM products ORDER BY created_at DESC LIMIT 10")
+    new_arrivals = cursor.fetchall()
+
+    cursor.close()
+    db.close()
+
+    # Redirect logged-in users to homepage
     if 'account_id' in session:
         return redirect(url_for('homepage'))
-    return render_template("index.html")
+
+    return render_template(
+        "index.html",
+        products=new_arrivals,  # matches your template's "products[:10]"
+        recommended=recommended
+    )
+
+
+
 
 @app.route("/homepage")
 @login_required
 def homepage():
-    
     db = get_db_connection()
     cursor = db.cursor(dictionary=True)
-    cursor.execute("SELECT * FROM products ORDER BY created_at DESC LIMIT 10")
+    
+    # New Arrivals (scrollable, max 10)
+    cursor.execute("SELECT * FROM products ORDER BY product_id DESC LIMIT 10")
     products = cursor.fetchall()
+    
+    # Recommended (everything, no limit)
+    cursor.execute("SELECT * FROM products ORDER BY product_id DESC")
+    recommended = cursor.fetchall()
+    
     cursor.close()
     db.close()
     
-    return render_template("homepage.html", products=products)
+    return render_template("homepage.html", products=products, recommended=recommended)
+
+
 
 
 @app.route('/reload')
