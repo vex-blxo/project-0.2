@@ -44,7 +44,7 @@
   <span class="user-greeting">Hello, <strong>{{ session['first_name'] }}</strong>!</span>
   <div class="dropdown">
     <button class="dropdown-btn" id="dropdownToggle">
-      <img src="{{ url_for('static', filename=session.profile_image) if session.profile_image else url_for('static', filename='images/default-profile.png') }}" alt="Profile" style="width: 30px; height: 30px; border-radius: 50%; object-fit: cover;">
+      <i class="fas fa-cog"></i>
     </button>
     <ul class="dropdown-content" id="dropdownMenu">
       <li><a href="{{ url_for('profile') }}">Profile</a></li>

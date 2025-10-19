@@ -1,60 +1,82 @@
-{% extends "navin.html" %} {% block title %}Home - Food Taxi{% endblock %} {%
-block content %}
+{% extends "navin.html" %}
+{% block title %}Home - Food Taxi{% endblock %}
 
-<link
-  rel="stylesheet"
-  href="{{ url_for('static', filename='css/style.css') }}"
-/>
+{% block content %}
 
-<link
-  rel="stylesheet"
-  href="{{ url_for('static', filename='css/cart.css') }}"
-/>
+<!-- Styles -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/cart.css') }}">
 
+<!-- ===================== -->
+<!-- 🛒 New Arrivals Section -->
+<!-- ===================== -->
 <h2>New Arrivals</h2>
 <div class="product-scroll">
-  <div class="product">
-    <img
-      src="{{ url_for('static', filename='images/product1.jpg') }}"
-      alt="Product 1"
-    />
-    <h3 class="product-name">Baron (All-Purpose Flour)</h3>
-    <p class="product-category">Category: Snacks</p>
-    <div class="product-rating">★★★★☆</div>
-    <p class="product-price">$12.99</p>
-  </div>
 
-  <div class="product">
-    <img
-      src="{{ url_for('static', filename='images/product2.jpg') }}"
-      alt="Product 2"
-    />
-    <h3 class="product-name">
-      Battle at the Roof Orochimaru Invade Konoha with Edo Hokage
-    </h3>
-    <p class="product-category">Category: Beverages</p>
-    <div class="product-rating">★★★★★</div>
-    <p class="product-price">$24.99</p>
-  </div>
+  {% if products %}
+    <!-- Dynamic Products from Database -->
+    {% for product in products %}
+    <div class="product" data-id="{{ product.product_id }}">
+      <img
+        src="{{ url_for('static', filename='images/' + product.image) }}"
+        alt="{{ product.product_name }}"
+      />
+      <h3 class="product-name">{{ product.product_name }}</h3>
+      <p class="product-category">Category: {{ product.category }}</p>
+      <div class="product-rating">★★★★☆</div>
+      <p class="product-price">${{ "%.2f"|format(product.price) }}</p>
 
-  <div class="product">
-    <img
-      src="{{ url_for('static', filename='images/product3.jpg') }}"
-      alt="Product 3"
-    />
-    <h3 class="product-name">Madara Uchiha (Five Kage Summit)</h3>
-    <p class="product-category">Category: Frozen</p>
-    <div class="product-rating">★★★☆☆</div>
-    <p class="product-price">$18.49</p>
-  </div>
+      <form action="{{ url_for('add_to_cart') }}" method="POST">
+        <input type="hidden" name="product_id" value="{{ product.product_id }}">
+        <input
+          type="number"
+          name="quantity"
+          value="1"
+          min="1"
+          max="{{ product.stock_quantity }}"
+          class="quantity-input"
+        >
+        <button type="submit" class="add-to-cart-btn">Add to Cart</button>
+      </form>
+    </div>
+    {% endfor %}
+  {% else %}
+    <!-- Static Dummy Products (Fallback) -->
+    <div class="product" data-id="1">
+      <img src="{{ url_for('static', filename='images/product1.jpg') }}" alt="Product 1" />
+      <h3 class="product-name">Baron (All-Purpose Flour)</h3>
+      <p class="product-category">Category: Snacks</p>
+      <div class="product-rating">★★★★☆</div>
+      <p class="product-price">$12.99</p>
+    </div>
+
+    <div class="product" data-id="2">
+      <img src="{{ url_for('static', filename='images/product2.jpg') }}" alt="Product 2" />
+      <h3 class="product-name">Battle at the Roof Orochimaru Invade Konoha with Edo Hokage</h3>
+      <p class="product-category">Category: Beverages</p>
+      <div class="product-rating">★★★★★</div>
+      <p class="product-price">$24.99</p>
+    </div>
+
+    <div class="product" data-id="3">
+      <img src="{{ url_for('static', filename='images/product3.jpg') }}" alt="Product 3" />
+      <h3 class="product-name">Madara Uchiha (Five Kage Summit)</h3>
+      <p class="product-category">Category: Frozen</p>
+      <div class="product-rating">★★★☆☆</div>
+      <p class="product-price">$18.49</p>
+    </div>
+  {% endif %}
 </div>
 
-<!-- 🪟 Product Modal -->
+<!-- ===================== -->
+<!-- 🪟 Product Modal Include -->
+<!-- ===================== -->
 {% include "product_detail_in.html" %}
+<script src="{{ url_for('static', filename='js/product_detail.js') }}"></script>
 
-<script src="/static/js/product_detail.js"></script>
-
-<!-- Drew kung may dadagdag ka lagay mo lng dun sa category.css mo lagay kung 
-gusto mo baguhin yung css name go lng naka connect sya sa base.html -->
+<!-- 🧾 Note:
+If you want to edit category styles,
+update category.css — it's linked via base.html or navin.html.
+-->
 
 {% endblock %}

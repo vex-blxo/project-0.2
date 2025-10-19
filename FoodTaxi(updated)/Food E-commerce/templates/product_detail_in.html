@@ -1,43 +1,40 @@
-<!-- product_detail.html -->
+<!-- product_detail_in.html -->
 <div class="modal-overlay" id="productOverlay">
   <div class="modal" id="productModal">
-    <span class="close-btn">V</span>
+    <!-- Close button -->
+    <span class="close-btn">×</span>
+
+    <!-- Product image -->
     <img id="modalImage" src="" alt="Product Image" />
+
+    <!-- Product details -->
     <h3 id="modalName"></h3>
     <p id="modalCategory"></p>
     <p id="modalPrice"></p>
-    <!-- Ratings added -->
-    <div class="modal-rating" id="modalRating">★★★★☆</div>
-    <p id="modalDescription"></p>
 
-    <!-- Buttons -->
-    <form id="addToCartForm">
-      <input type="hidden" name="product_id" id="modalProductId" />
-      <input type="hidden" name="quantity" value="1" />
-      <button type="submit" class="buy-now">Buy now</button>
+    <!-- Rating -->
+    <div class="modal-rating" id="modalRating">★★★★☆</div>
+
+    <!-- Product description -->
+    <p id="modalDescription">This is a placeholder description for now.</p>
+
+    <!-- Add to Cart Form -->
+    <form id="addToCartForm" action="{{ url_for('add_to_cart') }}" method="POST">
+      <!-- Hidden product ID (filled by JS dynamically) -->
+      <input type="hidden" name="product_id" id="modalProductId" value="">
+
+      <!-- Quantity field -->
+      <input
+        type="number"
+        name="quantity"
+        id="modalQuantity"
+        value="1"
+        min="1"
+        class="quantity-input"
+      />
+
+      <!-- Add to cart button -->
       <button type="submit" class="add-to-cart">Add to Cart</button>
     </form>
   </div>
-  <script>
-    const addToCartForm = document.getElementById("addToCartForm");
-    const cartBadge = document.querySelector(".cart-badge");
-
-    addToCartForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
-
-      const formData = new FormData(addToCartForm);
-
-      const response = await fetch("/add_to_cart", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (response.ok) {
-        let count = parseInt(cartBadge.textContent) || 0;
-        cartBadge.textContent = count + 1;
-      } else {
-        alert("Error adding to cart.");
-      }
-    });
-  </script>
 </div>

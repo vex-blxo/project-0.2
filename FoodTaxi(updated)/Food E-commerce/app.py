@@ -1,31 +1,18 @@
 from functools import wraps
-from flask import Flask, render_template, request, redirect, url_for, flash, session, send_from_directory
+from flask import Flask, render_template, request, redirect, url_for, flash, session
 from werkzeug.security import generate_password_hash, check_password_hash
 import mysql.connector
-import os
-from werkzeug.utils import secure_filename
-from cryptography.fernet import Fernet
-import base64
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key_here'
 
-# Configure upload folder
-UPLOAD_FOLDER = 'static/images/profile'
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
-
-# Encryption key for profile images
-ENCRYPTION_KEY = Fernet.generate_key()
-cipher = Fernet(ENCRYPTION_KEY)
-
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
 # ===============================
 # DATABASE CONNECTION
 # ===============================
-db = mysql.connector.connect(
+
+def get_db_connection():
+    return mysql.connector.connect(
+
     host="localhost",
     user="root",             # your MySQL username
     password="",             # your MySQL password
@@ -38,7 +25,7 @@ db = mysql.connector.connect(
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if not session.get('user_id'):
+        if not session.get('account_id'):
             flash("Please log in to continue.", "warning")
             return redirect(url_for('login', next=request.endpoint))
         return f(*args, **kwargs)
@@ -50,7 +37,7 @@ def guest_only(f):
     def decorated_function(*args, **kwargs):
         if request.endpoint == 'login' and request.method == 'POST':
             return f(*args, **kwargs)
-        if 'user_id' in session:
+        if 'account_id' in session:
             flash("You're already logged in!", "info")
             return redirect(url_for('homepage'))
         return f(*args, **kwargs)
@@ -74,28 +61,35 @@ def admin_required(f):
 @app.route('/')
 def index():
     """Main entry point — redirect based on login state."""
-    if 'user_id' in session:
+    if 'account_id' in session:
         return redirect(url_for('homepage'))
     return render_template("index.html")
 
-@app.route('/homepage')
+@app.route("/homepage")
 @login_required
 def homepage():
-    """Render homepage for logged-in users."""
-    return render_template("homepage.html")
+    
+    db = get_db_connection()
+    cursor = db.cursor(dictionary=True)
+    cursor.execute("SELECT * FROM products ORDER BY created_at DESC LIMIT 10")
+    products = cursor.fetchall()
+    cursor.close()
+    db.close()
+    
+    return render_template("homepage.html", products=products)
 
 
 @app.route('/reload')
 def reload():
     """Reloads the appropriate page depending on login state."""
-    if 'user_id' in session:
+    if 'account_id' in session:
         return redirect(url_for('homepage'))
     else:
         return redirect(url_for('index'))
 
 
 # ===============================
-# LOGIN
+# LOGIN (PATCHED)
 # ===============================
 @app.route('/login', methods=['GET', 'POST'])
 @guest_only
@@ -105,20 +99,24 @@ def login():
         password = request.form['password'].strip()
 
         try:
+            db = get_db_connection()
             cursor = db.cursor(dictionary=True, buffered=True)
             cursor.execute("SELECT * FROM accounts WHERE email = %s", (email,))
             user = cursor.fetchone()
 
             if user and check_password_hash(user['account_password'], password):
-                session['user_id'] = user['account_id']
+                # ✅ Store as account_id (consistent with DB)
+                session['account_id'] = user['account_id']
                 session['first_name'] = user['first_name']
                 session['last_name'] = user['last_name']
                 session['email'] = user['email']
                 session['user_type'] = user['user_type']
 
+                print("✅ DEBUG: account_id stored in session =", session.get("account_id"))
+
                 flash(f"Welcome back, {user['first_name']}!", "success")
 
-                # ✅ Redirect based on role
+                # Redirect by role
                 if user['user_type'] == 'admin':
                     return redirect(url_for('admin'))
                 else:
@@ -134,8 +132,12 @@ def login():
 
         finally:
             cursor.close()
+            db.close()
 
     return render_template('login.html')
+
+
+
 
 
 # ===============================
@@ -158,6 +160,7 @@ def signup():
         hashed_password = generate_password_hash(password)
 
         try:
+            db = get_db_connection()
             cursor = db.cursor()
             cursor.execute("SELECT email FROM accounts WHERE email = %s", (email,))
             existing_user = cursor.fetchone()
@@ -195,6 +198,7 @@ def signup():
 def admin():
     """Admin-only dashboard page."""
     try:
+        db = get_db_connection()
         cursor = db.cursor(dictionary=True)
         cursor.execute("SELECT account_id, first_name, last_name, email, user_type, date_registered FROM accounts")
         users = cursor.fetchall()
@@ -208,74 +212,209 @@ def admin():
 
 
 # ===============================
-# CART SYSTEM
+# CART SYSTEM (Database-Connected)
 # ===============================
-products = {
-    1: {"name": "All Purpose Flour", "price": 19.99, "stock": 10, "image": "product1.jpg"},
-    2: {"name": "Product 2", "price": 29.99, "stock": 8, "image": "product2.jpg"},
-    3: {"name": "Product 3", "price": 39.99, "stock": 5, "image": "product3.jpg"},
-}
-
-
 @app.route("/add_to_cart", methods=["POST"])
 @login_required
 def add_to_cart():
+    account_id = session.get("account_id")
     product_id = int(request.form["product_id"])
     quantity = int(request.form["quantity"])
 
-    if "cart" not in session:
-        session["cart"] = {}
+    db = get_db_connection()
+    cursor = db.cursor(dictionary=True)
 
-    cart = session["cart"]
+    # Fetch product info
+    cursor.execute("SELECT * FROM products WHERE product_id = %s", (product_id,))
+    product = cursor.fetchone()
 
-    if str(product_id) in cart:
-        cart[str(product_id)]["quantity"] += quantity
+    if not product:
+        cursor.close()
+        db.close()
+        return "Product not found", 404
+
+    # Check stock
+    if quantity > product["stock_quantity"]:
+        cursor.close()
+        db.close()
+        return "Not enough stock available", 400
+
+    # Check if the user already has a pending order
+    cursor.execute("""
+        SELECT order_id FROM orders 
+        WHERE account_id = %s AND order_status = 'pending'
+    """, (account_id,))
+    order = cursor.fetchone()
+
+    if order:
+        order_id = order["order_id"]
     else:
-        product = products[product_id]
-        cart[str(product_id)] = {
-            "id": product_id,
-            "name": product["name"],
-            "price": product["price"],
-            "quantity": quantity,
-            "image": product["image"],
-        }
+        # Create new order for this user
+        cursor.execute("""
+            INSERT INTO orders (account_id, order_status, total_price)
+            VALUES (%s, 'pending', 0.00)
+        """, (account_id,))
+        db.commit()
+        order_id = cursor.lastrowid
 
-    session["cart"] = cart
-    session.modified = True
+    # Check if product already in order_items
+    cursor.execute("""
+        SELECT * FROM order_items
+        WHERE order_id = %s AND product_id = %s
+    """, (order_id, product_id))
+    existing_item = cursor.fetchone()
 
+    if existing_item:
+        # Update quantity and price
+        new_qty = existing_item["quantity"] + quantity
+        cursor.execute("""
+            UPDATE order_items
+            SET quantity = %s, price_each = %s
+            WHERE item_id = %s
+        """, (new_qty, product["price"], existing_item["item_id"]))
+    else:
+        # Add new item
+        cursor.execute("""
+            INSERT INTO order_items (order_id, product_id, quantity, price_each)
+            VALUES (%s, %s, %s, %s)
+        """, (order_id, product_id, quantity, product["price"]))
+
+    # Update order total
+    cursor.execute("""
+        UPDATE orders
+        SET total_price = (
+            SELECT SUM(subtotal)
+            FROM order_items
+            WHERE order_id = %s
+        )
+        WHERE order_id = %s
+    """, (order_id, order_id))
+
+    db.commit()
+    cursor.close()
+    db.close()
+
+    flash("Item added to cart!", "success")
     return redirect(request.referrer or url_for("homepage"))
 
 
+# ===============================
+# VIEW CART (Database-Based)
+# ===============================
 @app.route("/cart")
 @login_required
 def cart():
-    cart = session.get("cart", {})
-    total = sum(item["price"] * item["quantity"] for item in cart.values())
-    return render_template("cart.html", cart=cart, total=total)
+    account_id = session.get("account_id")
+
+    db = get_db_connection()
+    cursor = db.cursor(dictionary=True)
+
+    # Get pending order items
+    cursor.execute("""
+        SELECT o.order_id, oi.*, p.product_name, p.image
+        FROM orders o
+        JOIN order_items oi ON o.order_id = oi.order_id
+        JOIN products p ON oi.product_id = p.product_id
+        WHERE o.account_id = %s AND o.order_status = 'pending'
+    """, (account_id,))
+    items = cursor.fetchall()
+
+    total = sum(item["subtotal"] for item in items) if items else 0
+
+    cursor.close()
+    db.close()
+
+    return render_template("cart.html", cart=items, total=total)
 
 
-# Example route
-@app.route("/product/<int:product_id>")
-def product_detail(product_id):
-    product = products[product_id]
-    return render_template("product_detail.html", product=product)
-
-
-@app.context_processor
-def cart_count():
-    cart_quantity = 0
-    if "cart" in session:
-        cart_quantity = sum(item["quantity"] for item in session["cart"].values())
-    return dict(cart_quantity=cart_quantity)
-
-
-@app.route("/remove/<int:product_id>", methods=["POST"])
+# ===============================
+# UPDATE CART QUANTITY
+# ===============================
+@app.route("/update_cart", methods=["POST"])
 @login_required
-def remove_from_cart(product_id):
-    cart = session.get("cart", {})
-    cart.pop(str(product_id), None)
-    session["cart"] = cart
+def update_cart():
+    account_id = session.get("account_id")
+    product_id = int(request.form["product_id"])
+    action = request.form.get("action")  # 'increase', 'decrease', 'remove'
+
+    db = get_db_connection()
+    cursor = db.cursor(dictionary=True)
+
+    # Get pending order
+    cursor.execute("""
+        SELECT order_id FROM orders
+        WHERE account_id = %s AND order_status = 'pending'
+    """, (account_id,))
+    order = cursor.fetchone()
+
+    if not order:
+        flash("No pending order found.", "error")
+        cursor.close()
+        db.close()
+        return redirect(url_for("cart"))
+
+    order_id = order["order_id"]
+
+    # Get current quantity and stock
+    cursor.execute("""
+        SELECT oi.quantity, p.stock_quantity, oi.price_each
+        FROM order_items oi
+        JOIN products p ON oi.product_id = p.product_id
+        WHERE oi.order_id = %s AND oi.product_id = %s
+    """, (order_id, product_id))
+    item = cursor.fetchone()
+
+    if not item:
+        flash("Item not found in cart.", "error")
+        cursor.close()
+        db.close()
+        return redirect(url_for("cart"))
+
+    new_quantity = item["quantity"]
+
+    if action == "increase":
+        if new_quantity < item["stock_quantity"]:
+            new_quantity += 1
+        else:
+            flash("Cannot add more. Stock limit reached.", "warning")
+    elif action == "decrease":
+        new_quantity -= 1
+    elif action == "remove":
+        new_quantity = 0  # triggers removal
+
+    if new_quantity <= 0:
+        # Remove item from order_items
+        cursor.execute("""
+            DELETE FROM order_items
+            WHERE order_id = %s AND product_id = %s
+        """, (order_id, product_id))
+        flash("Item removed from cart.", "info")
+    else:
+        # Update quantity and subtotal
+        cursor.execute("""
+            UPDATE order_items
+            SET quantity = %s, subtotal = %s * quantity
+            WHERE order_id = %s AND product_id = %s
+        """, (new_quantity, item["price_each"], order_id, product_id))
+
+    # Update order total
+    cursor.execute("""
+        UPDATE orders
+        SET total_price = (
+            SELECT IFNULL(SUM(subtotal), 0)
+            FROM order_items
+            WHERE order_id = %s
+        )
+        WHERE order_id = %s
+    """, (order_id, order_id))
+
+    db.commit()
+    cursor.close()
+    db.close()
+
     return redirect(url_for("cart"))
+
+
 
 
 # ===============================
@@ -300,12 +439,11 @@ def buyer_dashboard():
 @app.route('/profile')
 @login_required
 def profile():
+    db = get_db_connection()
     cursor = db.cursor(dictionary=True)
-    cursor.execute("SELECT * FROM accounts WHERE account_id = %s", (session['user_id'],))
+    cursor.execute("SELECT * FROM accounts WHERE account_id = %s", (session['account_id'],))
     user = cursor.fetchone()
     cursor.close()
-    # Update session with profile_image
-    session['profile_image'] = user['profile_image'] if user and user['profile_image'] else None
     return render_template('profile.html', user=user)
 
 from flask import jsonify
@@ -313,6 +451,7 @@ from flask import jsonify
 @app.route('/settings', methods=['GET', 'POST'])
 @login_required
 def settings():
+    db = get_db_connection()
     cursor = db.cursor(dictionary=True)
     if request.method == 'POST':
         data = (
@@ -328,7 +467,7 @@ def settings():
             request.form.get('province'),
             request.form.get('zip_code'),
             request.form.get('user_type'),
-            session['user_id']
+            session['account_id']
         )
 
         update_query = """
@@ -349,7 +488,7 @@ def settings():
         flash("Your account settings have been updated successfully!", "success")
         return redirect(url_for('profile'))
 
-    cursor.execute("SELECT * FROM accounts WHERE account_id = %s", (session['user_id'],))
+    cursor.execute("SELECT * FROM accounts WHERE account_id = %s", (session['account_id'],))
     user = cursor.fetchone()
     cursor.close()
     return render_template('settings.html', user=user)
@@ -362,68 +501,7 @@ def settings():
     user = cursor.fetchone()
     cursor.close()
 
-    return render_template('settings.html', user=user)
-
-@app.route('/update_profile_picture', methods=['POST'])
-@login_required
-def update_profile_picture():
-    if 'profile_picture' not in request.files:
-        flash('No file part', 'error')
-        return redirect(url_for('profile'))
-
-    file = request.files['profile_picture']
-    if file.filename == '':
-        flash('No selected file', 'error')
-        return redirect(url_for('profile'))
-
-    if file and allowed_file(file.filename):
-        # Delete old profile picture if exists
-        cursor = db.cursor(dictionary=True)
-        cursor.execute("SELECT profile_image FROM accounts WHERE account_id = %s", (session['user_id'],))
-        user = cursor.fetchone()
-        if user and user['profile_image']:
-            old_filepath = os.path.join('static', user['profile_image'])
-            if os.path.exists(old_filepath):
-                os.remove(old_filepath)
-
-        filename = secure_filename(f"{session['user_id']}_{file.filename}")
-        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-
-        # Encrypt the file data
-        file_data = file.read()
-        encrypted_data = cipher.encrypt(file_data)
-
-        # Save encrypted data to file
-        with open(filepath, 'wb') as f:
-            f.write(encrypted_data)
-
-        # Update database with new profile picture path
-        update_query = "UPDATE accounts SET profile_image = %s WHERE account_id = %s"
-        cursor.execute(update_query, (f"images/profile/{filename}", session['user_id']))
-        db.commit()
-        cursor.close()
-
-        flash('Profile picture updated successfully!', 'success')
-    else:
-        flash('Invalid file type. Only PNG, JPG, JPEG, GIF allowed.', 'error')
-
-    return redirect(url_for('profile'))
-
-@app.route('/static/images/profile/<filename>')
-@login_required
-def get_encrypted_image(filename):
-    from flask import Response
-    filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-    if os.path.exists(filepath):
-        with open(filepath, 'rb') as f:
-            encrypted_data = f.read()
-        decrypted_data = cipher.decrypt(encrypted_data)
-        # Determine MIME type based on file extension
-        ext = filename.rsplit('.', 1)[1].lower()
-        mime_type = 'image/jpeg' if ext in ['jpg', 'jpeg'] else f'image/{ext}'
-        return Response(decrypted_data, mimetype=mime_type)
-    else:
-        return "File not found", 404
+    return render_template('settings.html', user=user)  
 
 # ===============================
 # RUN APP
