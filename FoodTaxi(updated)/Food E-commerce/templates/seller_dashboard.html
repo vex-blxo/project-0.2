@@ -1,0 +1,93 @@
+{% extends "navin.html" %}
+{% block title %}Seller Dashboard{% endblock %}
+{% block content %}
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/seller_dashboard.css') }}">
+
+<section class="seller-dashboard">
+  <h2>Welcome, {{ user.first_name }}!</h2>
+  <p class="subtitle">Manage your products, track orders, and view performance here.</p>
+
+  <!-- Stats Overview -->
+  <div class="dashboard-stats">
+    <div class="stat-card">
+      <h3>Total Products</h3>
+      <p>{{ total_products or 0 }}</p>
+    </div>
+    <div class="stat-card">
+      <h3>Total Orders</h3>
+      <p>{{ total_orders or 0 }}</p>
+    </div>
+    <div class="stat-card">
+      <h3>Total Sales</h3>
+      <p>₱{{ total_sales or '0.00' }}</p>
+    </div>
+  </div>
+
+  <!-- Manage Products -->
+  <div class="dashboard-section">
+    <h3>Your Products</h3>
+    <a href="{{ url_for('add_product') }}" class="add-btn">+ Add Product</a>
+
+    <table class="product-table">
+      <thead>
+        <tr>
+          <th>Product Name</th>
+          <th>Price</th>
+          <th>Stock</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% if products %}
+          {% for p in products %}
+          <tr>
+            <td>{{ p.product_name }}</td>
+            <td>₱{{ p.price }}</td>
+            <td>{{ p.stock_quantity }}</td>
+            <td>
+              <a href="{{ url_for('edit_product', product_id=p.product_id) }}" class="edit-btn">Edit</a>
+              <a href="{{ url_for('delete_product', product_id=p.product_id) }}" class="delete-btn">Delete</a>
+            </td>
+          </tr>
+          {% endfor %}
+        {% else %}
+          <tr><td colspan="4">No products yet. Add one to get started!</td></tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Orders Section -->
+  <div class="dashboard-section">
+    <h3>Recent Orders</h3>
+    <table class="order-table">
+      <thead>
+        <tr>
+          <th>Order ID</th>
+          <th>Buyer</th>
+          <th>Status</th>
+          <th>Total</th>
+          <th>Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% if orders %}
+          {% for o in orders %}
+          <tr>
+            <td>#{{ o.order_id }}</td>
+            <td>{{ o.buyer_name }}</td>
+            <td>{{ o.order_status }}</td>
+            <td>₱{{ o.total_price }}</td>
+            <td>{{ o.order_date.strftime('%Y-%m-%d') }}</td>
+          </tr>
+          {% endfor %}
+        {% else %}
+          <tr><td colspan="5">No orders yet.</td></tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+{% endblock %}
