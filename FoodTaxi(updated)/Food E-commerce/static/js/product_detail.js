@@ -44,3 +44,10 @@ overlay.addEventListener("click", (e) => {
     overlay.classList.remove("active");
   }
 });
+
+document.querySelectorAll(".product").forEach((product) => {
+  product.addEventListener("click", () => {
+    const overlay = document.getElementById("productOverlay");
+    overlay.style.display = "flex";
+  });
+});
