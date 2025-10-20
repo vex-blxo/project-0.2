@@ -91,6 +91,10 @@ def index():
 @app.route("/homepage")
 @login_required
 def homepage():
+    # If user is a seller, redirect to their dashboard instead
+    if session.get('user_type') == 'seller':
+        return redirect(url_for('seller_dashboard'))
+
     db = get_db_connection()
     cursor = db.cursor(dictionary=True)
     
@@ -149,9 +153,12 @@ def login():
 
                 # Redirect by role
                 if user['user_type'] == 'admin':
-                    return redirect(url_for('admin'))
+                 return redirect(url_for('admin'))
+                elif user['user_type'] == 'seller':
+                 return redirect(url_for('seller_dashboard'))
                 else:
-                    return redirect(url_for('homepage'))
+                 return redirect(url_for('homepage'))
+
 
             flash("Invalid email or password. Please try again.", "error")
             return redirect(url_for('login'))
@@ -484,7 +491,10 @@ from flask import jsonify
 def settings():
     db = get_db_connection()
     cursor = db.cursor(dictionary=True)
+
     if request.method == 'POST':
+        user_type = request.form.get('user_type')  # get selected user type
+
         data = (
             request.form.get('first_name'),
             request.form.get('last_name'),
@@ -497,7 +507,7 @@ def settings():
             request.form.get('city'),
             request.form.get('province'),
             request.form.get('zip_code'),
-            request.form.get('user_type'),
+            user_type,
             session['account_id']
         )
 
@@ -514,15 +524,61 @@ def settings():
         session['first_name'] = request.form.get('first_name')
         session['last_name'] = request.form.get('last_name')
         session['email'] = request.form.get('email')
-        session['user_type'] = request.form.get('user_type')
+        session['user_type'] = user_type
 
         flash("Your account settings have been updated successfully!", "success")
-        return redirect(url_for('profile'))
 
+       
     cursor.execute("SELECT * FROM accounts WHERE account_id = %s", (session['account_id'],))
     user = cursor.fetchone()
     cursor.close()
     return render_template('settings.html', user=user)
+
+@app.route('/become_seller')
+@login_required
+def become_seller():
+    db = get_db_connection()
+    cursor = db.cursor()
+    cursor.execute("UPDATE accounts SET user_type = 'seller' WHERE account_id = %s", (session['account_id'],))
+    db.commit()
+    cursor.close()
+
+    # Update session
+    session['user_type'] = 'seller'
+
+    flash("You are now a seller! Redirecting to your dashboard...", "success")
+    return redirect(url_for('seller_dashboard'))
+
+@app.route('/seller_dashboard')
+@login_required
+def seller_dashboard():
+    if session.get('user_type') != 'seller':
+        flash("Access denied: Only sellers can view this page.", "error")
+        return redirect(url_for('profile'))
+
+    db = get_db_connection()
+    cursor = db.cursor(dictionary=True)
+
+    # Show same data logic as homepage
+    cursor.execute("SELECT * FROM products ORDER BY product_id DESC LIMIT 10")
+    products = cursor.fetchall()
+
+    cursor.execute("SELECT * FROM products ORDER BY product_id DESC")
+    recommended = cursor.fetchall()
+
+    cursor.close()
+    db.close()
+
+    # Use same display structure as homepage for now
+    return render_template(
+        'seller_dashboard.html',
+        user=session,
+        products=products,
+        recommended=recommended
+    )
+
+
+
 
 
     cursor.execute("""

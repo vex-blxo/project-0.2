@@ -13,6 +13,11 @@
       rel="stylesheet"
       href="{{ url_for('static', filename='css/style.css') }}"
     />
+
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/cart.css') }}"
+    />
     <link
       rel="stylesheet"
       href="{{ url_for('static', filename='css/category.css') }}"
@@ -60,9 +65,42 @@
 
     <main>{% block content %}{% endblock %}</main>
 
-    <footer>
-      <p>&copy; 2025 Food Taxi. All rights reserved.</p>
-    </footer>
+    <!-- ====== FOOTER SECTION ====== -->
+<footer class="footer">
+  <div class="footer-divider"></div>
+  <div class="footer-content">
+    <div class="footer-section">
+      <h4>FoodTaxi</h4>
+      <ul>
+        <li><a href="#">About Us</a></li>
+        <li><a href="#">Contact</a></li>
+        <li><a href="#">Careers</a></li>
+      </ul>
+    </div>
+
+    <div class="footer-section">
+      <h4>Customer Support</h4>
+      <ul>
+        <li><a href="#">FAQs</a></li>
+        <li><a href="#">Returns & Refunds</a></li>
+        <li><a href="#">Shipping Info</a></li>
+      </ul>
+    </div>
+
+    <div class="footer-section">
+      <h4>Legal</h4>
+      <ul>
+        <li><a href="#">Privacy Policy</a></li>
+        <li><a href="#">Terms & Conditions</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    <p>© 2025 FoodTaxi. All rights reserved.</p>
+  </div>
+</footer>
+
 
     <script>
   document.addEventListener("DOMContentLoaded", function () {

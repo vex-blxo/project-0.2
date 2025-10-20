@@ -123,6 +123,28 @@ nav ul li a:hover {
   transform: translateY(0);
 }
 
+.nav-buttons {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.start-selling-btn {
+  padding: 0.5rem 1.2rem;
+  border-radius: 30px;
+  font-weight: 600;
+  border: 2px solid #1fa14e;
+  background-color: #1fa14e;
+  color: #fff;
+  transition: 0.3s ease;
+}
+
+.start-selling-btn:hover {
+  background-color: #158b42;
+  border-color: #158b42;
+}
+
+
 /* ========== HERO SECTION ========== */
 .hero {
   display: flex;
@@ -311,15 +333,70 @@ nav ul li a:hover {
   margin-bottom: 0.5rem;
 }
 
-/* ========== FOOTER ========== */
-footer {
-  text-align: center;
-  padding: 1.5rem;
-  margin-top: 3rem;
-  background: #f5fdf7;
-  color: #555;
-  font-size: 0.9rem;
+/* ====== FOOTER STYLES ====== */
+.footer {
+  position: relative; /* enables absolute positioning for the divider */
+  background-color: #ffffff;
+  color: #333;
+  padding: 40px 20px 20px;
+  margin-top: 30px;
+  font-size: 0.95rem;
 }
+
+/* Green line pinned to top */
+.footer-divider {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 3px;
+  background-color: #1fa14e;
+  width: 100%;
+  margin: 0; /* remove extra spacing */
+}
+
+.footer-content {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-around;
+  max-width: 1200px;
+  margin: 0 auto;
+  gap: 5px;
+}
+
+.footer-section h4 {
+  color: #1fa14e;
+  margin-bottom: 10px;
+  font-size: 1.1rem;
+}
+
+.footer-section ul {
+  list-style: none;
+  padding: 0;
+}
+
+.footer-section ul li {
+  margin-bottom: 6px;
+}
+
+.footer-section ul li a {
+  color: #333;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.footer-section ul li a:hover {
+  color: #1fa14e;
+}
+
+.footer-bottom {
+  text-align: center;
+  margin-top: 20px;
+  border-top: 1px solid #e6e6e6;
+  padding-top: 10px;
+  font-size: 0.85rem;
+  color: #666;
+}
+
 
 /* ========== RESPONSIVE NAVIGATION ========== */
 @media (max-width: 768px) {
@@ -355,6 +432,7 @@ footer {
     font-size: 1.8rem;
   }
 }
+
 
 /* ========== Buy Button ========== */
 .buy-now {

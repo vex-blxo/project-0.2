@@ -41,9 +41,11 @@
     <input type="text" name="zip_code" value="{{ user.zip_code or '' }}">
 
     <label>User Type</label>
-    <input type="text" name="user_type" value="{{ user.user_type or '' }}">
-
-    <button type="submit" class="save-btn">Save Changes</button>
+<select name="user_type" required>
+  <option value="buyer" {% if user.user_type == 'buyer' %}selected{% endif %}>Buyer</option>
+  <option value="seller" {% if user.user_type == 'seller' %}selected{% endif %}>Seller</option>
+  <option value="admin" {% if user.user_type == 'admin' %}selected{% endif %}>Admin</option>
+</select>
   </form>
 </section>
 {% endblock %}

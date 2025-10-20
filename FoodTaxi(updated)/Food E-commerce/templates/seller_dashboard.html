@@ -1,93 +1,52 @@
 {% extends "navin.html" %}
-{% block title %}Seller Dashboard{% endblock %}
+{% block title %}Home - Food Taxi{% endblock %}
 {% block content %}
 
-<link rel="stylesheet" href="{{ url_for('static', filename='css/seller_dashboard.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 
-<section class="seller-dashboard">
-  <h2>Welcome, {{ user.first_name }}!</h2>
-  <p class="subtitle">Manage your products, track orders, and view performance here.</p>
+<!-- ===== NAVBAR WITH START SELLING BUTTON ===== -->
+<nav>
+  <a href="{{ url_for('seller_dashboard') }}" class="title-btn">Food Taxi</a>
 
-  <!-- Stats Overview -->
-  <div class="dashboard-stats">
-    <div class="stat-card">
-      <h3>Total Products</h3>
-      <p>{{ total_products or 0 }}</p>
-    </div>
-    <div class="stat-card">
-      <h3>Total Orders</h3>
-      <p>{{ total_orders or 0 }}</p>
-    </div>
-    <div class="stat-card">
-      <h3>Total Sales</h3>
-      <p>₱{{ total_sales or '0.00' }}</p>
-    </div>
-  </div>
+  
+</nav>
+<!-- ========================================== -->
 
-  <!-- Manage Products -->
-  <div class="dashboard-section">
-    <h3>Your Products</h3>
-    <a href="{{ url_for('add_product') }}" class="add-btn">+ Add Product</a>
+<h2>New Arrivals</h2>
+<div class="product-scroll">
+  {% if products %} 
+    {% for product in products[:10] %} {# only show first 10 #}
+      <div class="product" data-id="{{ product.product_id }}">
+        <img src="{{ url_for('static', filename='images/' + product.image) }}" alt="{{ product.product_name }}" />
+        <h3 class="product-name">{{ product.maker }} ({{ product.product_name }})</h3>
+        <p class="product-category">Category: {{ product.category }}</p>
+        <div class="product-rating">★★★★☆</div>
+        <p class="product-price">${{ "%.2f"|format(product.price) }}</p>
+      </div>
+    {% endfor %}
+  {% else %}
+    <p>No products found.</p>
+  {% endif %}
+</div>
 
-    <table class="product-table">
-      <thead>
-        <tr>
-          <th>Product Name</th>
-          <th>Price</th>
-          <th>Stock</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% if products %}
-          {% for p in products %}
-          <tr>
-            <td>{{ p.product_name }}</td>
-            <td>₱{{ p.price }}</td>
-            <td>{{ p.stock_quantity }}</td>
-            <td>
-              <a href="{{ url_for('edit_product', product_id=p.product_id) }}" class="edit-btn">Edit</a>
-              <a href="{{ url_for('delete_product', product_id=p.product_id) }}" class="delete-btn">Delete</a>
-            </td>
-          </tr>
-          {% endfor %}
-        {% else %}
-          <tr><td colspan="4">No products yet. Add one to get started!</td></tr>
-        {% endif %}
-      </tbody>
-    </table>
-  </div>
+<h2>Recommended for You</h2>
+<div class="recommended-products">
+  {% if recommended %}
+    {% for product in recommended %}
+      <div class="product" data-id="{{ product.product_id }}">
+        <img src="{{ url_for('static', filename='images/' + product.image) }}" alt="{{ product.product_name }}" />
+        <h3 class="product-name">{{ product.product_name }}</h3>
+        <p class="product-category">Category: {{ product.category }}</p>
+        <div class="product-rating">★★★★☆</div>
+        <p class="product-price">${{ "%.2f"|format(product.price) }}</p>
+      </div>
+    {% endfor %}
+  {% else %}
+    <p>No recommended products yet.</p>
+  {% endif %}
+</div>
 
-  <!-- Orders Section -->
-  <div class="dashboard-section">
-    <h3>Recent Orders</h3>
-    <table class="order-table">
-      <thead>
-        <tr>
-          <th>Order ID</th>
-          <th>Buyer</th>
-          <th>Status</th>
-          <th>Total</th>
-          <th>Date</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% if orders %}
-          {% for o in orders %}
-          <tr>
-            <td>#{{ o.order_id }}</td>
-            <td>{{ o.buyer_name }}</td>
-            <td>{{ o.order_status }}</td>
-            <td>₱{{ o.total_price }}</td>
-            <td>{{ o.order_date.strftime('%Y-%m-%d') }}</td>
-          </tr>
-          {% endfor %}
-        {% else %}
-          <tr><td colspan="5">No orders yet.</td></tr>
-        {% endif %}
-      </tbody>
-    </table>
-  </div>
-</section>
+{% include "product_detail_in.html" %}
+<script src="{{ url_for('static', filename='js/product_detail.js') }}"></script>
 
 {% endblock %}
